@@ -9,49 +9,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [imageData, setImageData] = useState<string | null>(null);
 
-  const readFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = (event) => {
-        if (event.target && event.target.result) {
-          const base64String = btoa(String.fromCharCode(...new Uint8Array(event.target.result as ArrayBuffer)));
-          resolve(base64String);
-        } else {
-          reject(new Error("Failed to read file"));
-        }
-      };
-      reader.onerror = (error) => {
-        reject(new Error(`Error reading file: ${error}`));
-      };
-      reader.readAsArrayBuffer(file);
-    }
-    );
-  };
 
-  const handleUpload = async (e: any) => {
-    setLoading(true);
-    setError(null);
-    setImageData(null);
-    const selectedImage = e.target.files[0];
-    if (selectedImage) {
-      const result = await readFile(selectedImage);
-      if (await isImageSafe(result)) {
-        await uploadImage(result, selectedImage.name);
-        console.log("Image uploaded successfully");
-        setImageData(result);
-        setLoading(false);
-      }
-      else {
-        setError("Image is not safe for upload.");
-        console.error("Image is not safe for upload.");
-        setLoading(false);
-      }
-    } else {
-      setError("No image selected.");
-      setLoading(false);
-    }
-  };
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUploadSimple = async (e: any) => {
     setLoading(true);
     setError(null);
