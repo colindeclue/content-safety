@@ -24,7 +24,7 @@ export default function Home() {
       reader.onloadend = async (event) => {
         if (event.target && event.target.result) {
           const base64String = (event.target.result as string).split(',')[1]; // Extract base64 string from data URL
-          console.log(event.target.result);
+          console.log(base64String);
           if (await isImageSafe(base64String)) {
             await uploadImage(base64String, selectedImage.name);
             console.log("Image uploaded successfully");

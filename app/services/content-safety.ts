@@ -3,6 +3,8 @@
 import { AzureKeyCredential } from "@azure/core-auth";
 import ContentSafetyClient, { isUnexpected } from "@azure-rest/ai-content-safety";
 
+const incidentNames = process.env.INCIDENT_NAMES?.split(",") ?? ["blurry-images"];
+
 export const isImageSafe = async (imageData: string) => {
     const endpoint = process.env.CONTENT_SAFETY_ENDPOINT;
     const key = process.env.CONTENT_SAFETY_KEY;
@@ -12,6 +14,7 @@ export const isImageSafe = async (imageData: string) => {
     }
 
     const credential = new AzureKeyCredential(key);
+    console.log("incidentNames",incidentNames);
 
     const client = ContentSafetyClient(endpoint, credential);
 
@@ -37,7 +40,7 @@ export const isImageSafe = async (imageData: string) => {
                 "Content-Type": "application/json",
                 "Ocp-Apim-Subscription-Key": key,
             },
-            body: JSON.stringify({ image: { content: imageData }, incidentNames: ["blurry-images"] }),
+            body: JSON.stringify({ image: { content: imageData }, incidentNames: incidentNames }),
         }
     );
 
