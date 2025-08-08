@@ -5,10 +5,13 @@ import ContentSafetyClient, { isUnexpected } from "@azure-rest/ai-content-safety
 
 const incidentNames = process.env.INCIDENT_NAMES?.split(",") ?? ["blurry-images"];
 
-export const isImageSafe = async (imageData: string) => {
+export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuffer) => {
     const endpoint = process.env.CONTENT_SAFETY_ENDPOINT;
     const key = process.env.CONTENT_SAFETY_KEY;
-    if (!endpoint || !key) {
+    const predictionKey = process.env.VISION_PREDICTION_KEY;
+    const predictionEndpoint = process.env.VISION_PREDICTION_ENDPOINT;
+
+    if (!endpoint || !key || !predictionKey || !predictionEndpoint) {
         console.error("Content safety endpoint or key is not set.");
         return false;
     }
@@ -32,29 +35,37 @@ export const isImageSafe = async (imageData: string) => {
         console.warn("Image is not safe:", result.body.categoriesAnalysis);
         return false;
     }
+    
+    const url = `${predictionEndpoint}/customvision/v3.0/Prediction/${process.env.VISION_PREDICTION_PROJECT_ID}/classify/iterations/${encodeURIComponent(process.env.VISION_PREDICTION_PROJECT_NAME!)}/image`;
+    console.log("Analyzing image with Custom Vision at URL:", url);
 
-    const incidentResult = await fetch(`${endpoint}contentsafety/image:detectIncidents?api-version=2024-02-15-preview`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Ocp-Apim-Subscription-Key": key,
-            },
-            body: JSON.stringify({ image: { content: imageData }, incidentNames: incidentNames }),
-        }
-    );
+    const projectId = process.env.VISION_PREDICTION_PROJECT_ID;
 
-    if (!incidentResult.ok) {
-        console.error("Error detecting incidents:", incidentResult);
+    const predictionResult = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/octet-stream",
+            "Prediction-Key": predictionKey,
+        },
+        body: imageArrayBuffer,
+    });
+
+    // const predictionResult = await fetch(url, {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/octet-stream",
+    //         "Prediction-Key": predictionKey,
+    //     },
+    //     body: imageData,
+    // });
+
+    if (!predictionResult.ok) {
+        console.error("Error analyzing image with Custom Vision:", predictionResult.statusText);
         return false;
     }
 
-    const incidentsData = await incidentResult.json();
-
-    if (incidentsData.incidentMatches && incidentsData.incidentMatches.length > 0) {
-        console.warn("Image contains incidents:", incidentsData.incidentMatches);
-        return false;
-    }
+    const responseBody = await predictionResult.json();
+    console.log("Custom Vision response:", responseBody);
 
     return true;
 }

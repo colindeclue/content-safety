@@ -37,3 +37,6 @@ next-env.d.ts
 
 # package-lock
 package-lock.json
+
+# local only files
+/public/images/*

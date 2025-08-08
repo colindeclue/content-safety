@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { isImageSafe } from "./services/content-safety";
 import { uploadImage } from "./services/storage-account";
+// import { uploadImagesOnce } from "./services/custom-vision";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,9 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setImageData(null);
-    const selectedImage = e.target.files[0];
+    const selectedImage : File = e.target.files[0];
+    // console.log("Upload images once before processing");
+    // await uploadImagesOnce(); // Ensure images are uploaded once before processing
     if (selectedImage) {
       const reader = new FileReader();
       reader.onloadstart = () => {
@@ -23,9 +26,11 @@ export default function Home() {
       };
       reader.onloadend = async (event) => {
         if (event.target && event.target.result) {
+          const arrayBuffer = await selectedImage.arrayBuffer();
+          console.log("arrayBuffer: ", arrayBuffer);
           const base64String = (event.target.result as string).split(',')[1]; // Extract base64 string from data URL
           console.log(base64String);
-          if (await isImageSafe(base64String)) {
+          if (await isImageSafe(base64String, arrayBuffer)) {
             await uploadImage(base64String, selectedImage.name);
             console.log("Image uploaded successfully");
             setImageData(base64String);

@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@azure-rest/ai-content-safety": "^1.0.1",
+    "@azure/cognitiveservices-customvision-prediction": "^5.1.2",
+    "@azure/cognitiveservices-customvision-training": "^5.2.0",
     "@azure/identity": "^4.10.0",
     "@azure/storage-blob": "^12.27.0",
     "next": "15.3.3",
