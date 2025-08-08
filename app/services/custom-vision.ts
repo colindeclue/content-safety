@@ -2,7 +2,6 @@
 
 import { TrainingAPIClient } from "@azure/cognitiveservices-customvision-training";
 import * as msRest from "@azure/ms-rest-js";
-import { PredictionAPIClient } from "@azure/cognitiveservices-customvision-prediction";
 import * as fs from "fs"
 import * as util from "util";
 import { Project } from "@azure/cognitiveservices-customvision-training/esm/models";
@@ -10,17 +9,13 @@ import { Project } from "@azure/cognitiveservices-customvision-training/esm/mode
 export const uploadImagesOnce = async() => {
     const trainingKey = process.env.VISION_TRAINING_KEY;
     const trainingEndpoint = process.env.VISION_TRAINING_ENDPOINT;
-    const predictionKey = process.env.VISION_PREDICTION_KEY;
-    const predictionEndpoint = process.env.VISION_PREDICTION_ENDPOINT;
     const predictionResourceId = process.env.VISION_PREDICTION_RESOURCE_ID;
-    if (!trainingKey || !trainingEndpoint || !predictionKey || !predictionEndpoint || !predictionResourceId) {
+    if (!trainingKey || !trainingEndpoint || !predictionResourceId) {
         console.error("Custom Vision keys or endpoints are not set.");
         return;
     }
     const trainingCredentials = new msRest.ApiKeyCredentials({ inHeader: { "Training-key": trainingKey } });
     const trainingClient = new TrainingAPIClient(trainingCredentials, trainingEndpoint);
-    const predictionCredentials = new msRest.ApiKeyCredentials({ inHeader: { "Prediction-key": predictionKey } });
-    const predictionClient = new PredictionAPIClient(predictionCredentials, predictionEndpoint);
 
     const projectName = "MLSPOC Custom Vision";
     const existingProjects = await trainingClient.getProjects();
@@ -59,7 +54,6 @@ export const uploadImagesOnce = async() => {
         console.log("Created tags:", tags.map(tag => tag.name));
         const imagesDir = "images";
 
-        // let fileUploadPromises = [];
         for (const tag of tags) {
             const tagDir = `public/${imagesDir}/${tag.name}`;
             if (!fs.existsSync(tagDir)) {
@@ -103,17 +97,6 @@ export const uploadImagesOnce = async() => {
         );
         console.log("Published iteration:", publishIteration);
     }
-
-    const blurryImage = fs.readFileSync("public/images/Blur Images Sample/public/images/Blur Images Samples/08eb2c9d1d226b2355a58002c5fdd5a83cb61726d798dbd1ce41b9ffc16dec1c.jpeg");
-    const thisProject = existingProjects.find(project => project.name === projectName)
-    const results = await predictionClient.classifyImage(thisProject!.id!, "MLSPOC Custom Vision", blurryImage);
-
-    // Show results
-    console.log("Results:");
-    results.predictions!.forEach(predictedResult => {
-        console.log(`\t ${predictedResult.tagName}: ${(predictedResult.probability! * 100.0).toFixed(2)}%`);
-    });
-
 }
 
 function retry(maxRetries: number, delay: number, fn: () => Promise<any>): Promise<any> {

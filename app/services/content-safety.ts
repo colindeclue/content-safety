@@ -3,8 +3,6 @@
 import { AzureKeyCredential } from "@azure/core-auth";
 import ContentSafetyClient, { isUnexpected } from "@azure-rest/ai-content-safety";
 
-const incidentNames = process.env.INCIDENT_NAMES?.split(",") ?? ["blurry-images"];
-
 export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuffer) => {
     const endpoint = process.env.CONTENT_SAFETY_ENDPOINT;
     const key = process.env.CONTENT_SAFETY_KEY;
@@ -17,7 +15,6 @@ export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuff
     }
 
     const credential = new AzureKeyCredential(key);
-    console.log("incidentNames",incidentNames);
 
     const client = ContentSafetyClient(endpoint, credential);
 
@@ -37,9 +34,6 @@ export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuff
     }
     
     const url = `${predictionEndpoint}/customvision/v3.0/Prediction/${process.env.VISION_PREDICTION_PROJECT_ID}/classify/iterations/${encodeURIComponent(process.env.VISION_PREDICTION_PROJECT_NAME!)}/image`;
-    console.log("Analyzing image with Custom Vision at URL:", url);
-
-    const projectId = process.env.VISION_PREDICTION_PROJECT_ID;
 
     const predictionResult = await fetch(url, {
         method: "POST",
@@ -49,15 +43,6 @@ export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuff
         },
         body: imageArrayBuffer,
     });
-
-    // const predictionResult = await fetch(url, {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/octet-stream",
-    //         "Prediction-Key": predictionKey,
-    //     },
-    //     body: imageData,
-    // });
 
     if (!predictionResult.ok) {
         console.error("Error analyzing image with Custom Vision:", predictionResult.statusText);
