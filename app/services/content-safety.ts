@@ -52,5 +52,8 @@ export const isImageSafe = async (imageData: string, imageArrayBuffer: ArrayBuff
     const responseBody = await predictionResult.json();
     console.log("Custom Vision response:", responseBody);
 
-    return true;
+    return responseBody.predictions.map((prediction: { tagName: string; probability: number; }) => ({
+        tagName: prediction.tagName,
+        probability: prediction.probability
+    }));
 }

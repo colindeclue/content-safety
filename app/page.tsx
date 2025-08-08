@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 import { isImageSafe } from "./services/content-safety";
-import { uploadImage } from "./services/storage-account";
+// import { uploadImage } from "./services/storage-account";
 // import { uploadImagesOnce } from "./services/custom-vision";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageData, setImageData] = useState<string | null>(null);
-
+  const [predctionResult, setPredictionResult] = useState<string | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUploadSimple = async (e: any) => {
     setLoading(true);
     setError(null);
     setImageData(null);
+    setPredictionResult(null);
     const selectedImage : File = e.target.files[0];
     // console.log("Upload images once before processing");
     // await uploadImagesOnce(); // Ensure images are uploaded once before processing
@@ -30,10 +31,12 @@ export default function Home() {
           console.log("arrayBuffer: ", arrayBuffer);
           const base64String = (event.target.result as string).split(',')[1]; // Extract base64 string from data URL
           console.log(base64String);
-          if (await isImageSafe(base64String, arrayBuffer)) {
-            await uploadImage(base64String, selectedImage.name);
-            console.log("Image uploaded successfully");
+          const result = await isImageSafe(base64String, arrayBuffer);
+          if (result !== false) {
+            // await uploadImage(base64String, selectedImage.name);
+            // console.log("Image uploaded successfully");
             setImageData(base64String);
+            setPredictionResult(JSON.stringify(result, null, 2));
           } else {
             setError("Image is not safe for upload.");
             console.error("Image is not safe for upload.");
@@ -64,6 +67,12 @@ export default function Home() {
           <div className="flex flex-col items-center">
             <img src={`data:image/png;base64,${imageData}`} alt="Uploaded" className="max-w-full h-auto" />
             <p className="mt-4">Image uploaded successfully!</p>
+          </div>
+        )}
+        {predctionResult && (
+          <div className="mt-4 p-4 bg-gray-100 rounded-md">
+            <h3 className="text-lg font-semibold">Prediction Result:</h3>
+            <pre className="whitespace-pre-wrap break-all">{predctionResult}</pre>
           </div>
         )}
         {!imageData && !loading && !error && (
