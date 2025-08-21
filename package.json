@@ -1,32 +1,35 @@
 {
-  "name": "content-safety",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@azure-rest/ai-content-safety": "^1.0.1",
-    "@azure/cognitiveservices-customvision-prediction": "^5.1.2",
-    "@azure/cognitiveservices-customvision-training": "^5.2.0",
-    "@azure/identity": "^4.10.0",
-    "@azure/storage-blob": "^12.27.0",
-    "next": "15.3.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "name": "content-safety",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@azure-rest/ai-content-safety": "^1.0.1",
+        "@azure/cognitiveservices-customvision-prediction": "^5.1.2",
+        "@azure/cognitiveservices-customvision-training": "^5.2.0",
+        "@azure/identity": "^4.10.0",
+        "@azure/storage-blob": "^12.27.0",
+        "csv-parse": "^6.1.0",
+        "next": "15.3.3",
+        "papaparse": "^5.5.3",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^20",
+        "@types/papaparse": "^5.3.16",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "eslint": "^9",
+        "eslint-config-next": "15.3.3",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
 }

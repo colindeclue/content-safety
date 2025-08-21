@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { isImageSafe } from "./services/content-safety";
-// import { uploadImage } from "./services/storage-account";
-// import { uploadImagesOnce } from "./services/custom-vision";
+import Papa from "papaparse";
+import { uploadDownloadCSV } from "../services/upload-download-csv";
 
-export default function Home() {
+export default function Upload() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [imageData, setImageData] = useState<string | null>(null);
     const [predctionResult, setPredictionResult] = useState<string | null>(
         null
     );
@@ -17,33 +15,34 @@ export default function Home() {
     const handleUploadSimple = async (e: any) => {
         setLoading(true);
         setError(null);
-        setImageData(null);
         setPredictionResult(null);
-        const selectedImage: File = e.target.files[0];
+        const csv: File = e.target.files[0];
         // console.log("Upload images once before processing");
         // await uploadImagesOnce(); // Ensure images are uploaded once before processing
-        if (selectedImage) {
+        if (csv) {
             const reader = new FileReader();
             reader.onloadstart = () => {
                 console.log("Reading file...");
             };
             reader.onloadend = async (event) => {
                 if (event.target && event.target.result) {
-                    const arrayBuffer = await selectedImage.arrayBuffer();
-                    console.log("arrayBuffer: ", arrayBuffer);
-                    const base64String = (event.target.result as string).split(
-                        ","
-                    )[1]; // Extract base64 string from data URL
-                    console.log(base64String);
-                    const result = await isImageSafe(base64String, arrayBuffer);
-                    if (result !== false) {
-                        // await uploadImage(base64String, selectedImage.name);
-                        // console.log("Image uploaded successfully");
-                        setImageData(base64String);
-                        setPredictionResult(JSON.stringify(result, null, 2));
-                    } else {
-                        setError("Image is not safe for upload.");
-                        console.error("Image is not safe for upload.");
+                    const fileAsString = event.target.result as string;
+                    console.log("File content: ", fileAsString);
+                    try {
+                        const result = await uploadDownloadCSV(fileAsString);
+                        const outputCsv = Papa.unparse(result);
+                        const blob = new Blob([outputCsv], {
+                            type: "text/csv",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `Content-Safety-Predictions-${new Date().toLocaleString()}.csv`;
+                        a.click();
+                        setPredictionResult(JSON.stringify(result));
+                    } catch (err) {
+                        setError(`Error processing file: ${err}`);
+                        console.error(`Error processing file: ${err}`);
                     }
                 }
                 setLoading(false);
@@ -53,7 +52,7 @@ export default function Home() {
                 console.error(`Error reading file: ${error}`);
                 setLoading(false);
             };
-            reader.readAsDataURL(selectedImage);
+            reader.readAsText(csv);
         } else {
             setError("No image selected.");
             setLoading(false);
@@ -64,23 +63,13 @@ export default function Home() {
         <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
             <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
                 <input
-                    accept=".png, .jpg, .jpeg, .gif, .bmp, .tiff, .tif"
+                    accept=".csv"
                     type="file"
                     id="image-upload"
                     onChange={handleUploadSimple}
                 />
                 {loading && <p>Loading...</p>}
                 {error && <p className="text-red-500">{error}</p>}
-                {imageData && (
-                    <div className="flex flex-col items-center">
-                        <img
-                            src={`data:image/png;base64,${imageData}`}
-                            alt="Uploaded"
-                            className="max-w-full h-auto"
-                        />
-                        <p className="mt-4">Image uploaded successfully!</p>
-                    </div>
-                )}
                 {predctionResult && (
                     <div className="mt-4 p-4 bg-gray-100 rounded-md">
                         <h3 className="text-lg font-semibold">
@@ -90,11 +79,6 @@ export default function Home() {
                             {predctionResult}
                         </pre>
                     </div>
-                )}
-                {!imageData && !loading && !error && (
-                    <p className="text-gray-500">
-                        Please upload an image to get started.
-                    </p>
                 )}
             </main>
         </div>
