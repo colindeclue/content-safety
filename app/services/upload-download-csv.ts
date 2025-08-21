@@ -79,11 +79,12 @@ export const uploadDownloadCSV = async (data: string): Promise<string[][]> => {
     return records;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function retry(
     maxRetries: number,
     delay: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: () => Promise<any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
     return new Promise((resolve, reject) => {
         const attempt = (retriesLeft: number) => {
