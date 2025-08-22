@@ -21,8 +21,9 @@ export const uploadDownloadCSV = async (data: string): Promise<string[][]> => {
         from_line: 2, // Skip the header line
     });
     let count = 0;
+    let totalCount = 1;
     for await (const record of parser) {
-        console.log("Processing record:", record);
+        console.log("Processing record: " + `${totalCount} `, record);
         if (!record.page_post_id || !record.url) {
             console.warn(
                 "Skipping record with missing page_post_id or url:",
@@ -67,6 +68,7 @@ export const uploadDownloadCSV = async (data: string): Promise<string[][]> => {
         );
         records.push(record);
         count++;
+        totalCount++;
         if (count === 2) {
             count = 0;
             console.log(
